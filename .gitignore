@@ -1,0 +1,6 @@
+*.pyc
+venv/
+.cache/
+db.sqlite3
+IDaaS/IDaaS/conf/local_settings.py
+IDaaS/GApps/conf/client_secret.json
