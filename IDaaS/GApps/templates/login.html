@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html>
+
+<head>
+        <link rel="stylesheet" href="{% static "css/style.css" %}" />
+</head>
+
+<body>
+    <div class="wrapper fadeInDown">
+        <div id="formContent">
+
+            <!-- Icon -->
+            <div class="fadeIn first top-border">
+                <img src="{% static "img/visionect_logo.png" %}" />
+            </div>
+
+                <a class="large-button" href="{% url "social:begin" "google-oauth2" %}">
+                    <img src="{% static "img/gLogo.png" %}" />
+                    <span>Sign in</span>
+                </a>
+
+            <!-- Remind Passowrd -->
+            <div id="formFooter">
+               
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>

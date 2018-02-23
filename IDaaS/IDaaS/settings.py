@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'social_django',
     'IDaaS',
+    'GApps',
     'ldapdb',
 ]
 
@@ -66,7 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-		'social_django.context_processors.backends',
+		        'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
             ],
         },
@@ -133,6 +134,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 #import local settings
-from conf.local_settings import *
+from IDaaS.conf.local_settings import *
 
 
