@@ -18,7 +18,7 @@ class LdapUser(ldapdb.models.Model):
     first_name = CharField(db_column='givenName', verbose_name="Prime name")
     last_name = CharField("Final name", db_column='sn')
     full_name = CharField(db_column='cn')
-    email = CharField(db_column='mail')
+    email = CharField(db_column='mail', unique=True)
     phone = CharField(db_column='telephoneNumber', blank=True)
     mobile_phone = CharField(db_column='mobile', blank=True)
     photo = ImageField(db_column='jpegPhoto')

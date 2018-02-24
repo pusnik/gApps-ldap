@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="{% static "css/style.css" %}" />
+</head>
+
+<body>
+    <div class="wrapper">
+        <div id="formContent">
+            <!-- Tabs Titles -->
+            <h1 class="active">Hi, {{user.first_name}} {{user.last_name}}!</h1>
+        
+            <!-- Icon -->
+            <div>
+                <img src="
+                    {% if request.session.avatar_url %}
+                        {{request.session.avatar_url}}
+                    {% else %}
+                        http://danielzawadzki.com/codepen/01/icon.svg
+                    {% endif %}" 
+                id="icon" alt="User Icon" />
+                
+            </div>
+            {% if request.session.isAdmin%}
+            <a class="large-button" href="/accounts/logout/">
+                <span>Sync users to LDAP</span>
+            </a>
+            {% endif %}
+            
+            {% if hasLdap %}
+                <p>Change your wi-fi password.</p>
+                <!-- Password change Form -->
+                <form>
+                    <input type="password" id="login" name="login" placeholder="Password">
+                    <input type="password" id="password" name="login" placeholder="Password confirmation">
+                    <input type="submit" value="Change">
+                </form>
+            {% else %}
+                <h3>No wi-fi account found.<br />Please contact your admin.</h3>
+                <a class="large-button" href="/accounts/logout/">
+                    <span>Logout</span>
+                </a>
+            {% endif %}
+        
+            <div id="formFooter">
+               
+            </div>
+        
+        </div>
+    </div>
+</body>
+</html>
