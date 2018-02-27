@@ -12,7 +12,6 @@ def get_avatar(request, backend, strategy, details, response,
         ext = url.split('.')[-1]
         domain = response['domain']
         user_id = response['id']
-        print(user_id)
     if url:
         request.session['avatar_url'] = url.split('?')[0]+'?sz=200'
     if domain and user_id:
@@ -22,7 +21,9 @@ def get_avatar(request, backend, strategy, details, response,
             ' https://www.googleapis.com/admin/directory/v1/users/{}'.format(user_id),
                 params={'access_token': social.extra_data['access_token']}
         )
+        print ("User data")
         print (response.json())
         request.session['isAdmin'] = response.json().get('isAdmin')
+        request.session['domain'] = domain
 
 

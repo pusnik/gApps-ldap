@@ -2,6 +2,8 @@
 # This software is distributed under the two-clause BSD license.
 # Copyright (c) The django-ldapdb project
 
+from django.conf import settings
+
 import ldapdb.models
 from ldapdb.models.fields import CharField, ImageField, IntegerField, ListField
 
@@ -11,7 +13,7 @@ class LdapUser(ldapdb.models.Model):
     Class for representing an LDAP user entry.
     """
     # LDAP meta-data
-    base_dn = "ou=people,dc=visionect,dc=com"
+    base_dn = settings.BASE_DN_USER
     object_classes = ['posixAccount', 'shadowAccount', 'inetOrgPerson']
 
     # inetOrgPerson
@@ -21,7 +23,7 @@ class LdapUser(ldapdb.models.Model):
     email = CharField(db_column='mail', unique=True)
     phone = CharField(db_column='telephoneNumber', blank=True)
     mobile_phone = CharField(db_column='mobile', blank=True)
-    photo = ImageField(db_column='jpegPhoto')
+    photo = ImageField(db_column='jpegPhoto', blank=True)
 
     # posixAccount
     uid = IntegerField(db_column='uidNumber', unique=True)
@@ -44,7 +46,7 @@ class LdapGroup(ldapdb.models.Model):
     Class for representing an LDAP group entry.
     """
     # LDAP meta-data
-    base_dn = "ou=groups,dc=visionect,dc=com"
+    base_dn = settings.BASE_DN_GROUP
     object_classes = ['posixGroup']
 
     # posixGroup attributes

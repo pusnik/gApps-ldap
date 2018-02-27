@@ -1,72 +1,57 @@
-from __future__ import print_function
-import httplib2
-import os
+import secrets
+import requests
+import string
 
-from apiclient import discovery
-from oauth2client import client
-from oauth2client import tools
-from oauth2client.file import Storage
+from django.contrib.auth.models import User
 
-try:
-    import argparse
-    flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
-except ImportError:
-    flags = None
+from IDaaS.models import LdapUser
+from IDaaS.models import LdapGroup
 
-# If modifying these scopes, delete your previously saved credentials
-# at ~/.credentials/admin-directory_v1-python-quickstart.json
-SCOPES = 'https://www.googleapis.com/auth/admin.directory.user'
-CLIENT_SECRET_FILE = 'client_secret.json'
-APPLICATION_NAME = 'Directory API Python Quickstart'
+ALPHABET = string.ascii_letters + string.digits
 
-
-def get_credentials():
-    """Gets valid user credentials from storage.
-
-    If nothing has been stored, or if the stored credentials are invalid,
-    the OAuth2 flow is completed to obtain the new credentials.
-
-    Returns:
-        Credentials, the obtained credential.
+def copyToLdap(user_email):
     """
-    home_dir = os.path.expanduser('~')
-    credential_dir = os.path.join(home_dir, '.credentials')
-    if not os.path.exists(credential_dir):
-        os.makedirs(credential_dir)
-    credential_path = os.path.join(credential_dir,
-                                   'admin-directory_v1-python-quickstart.json')
-
-    store = Storage(credential_path)
-    credentials = store.get()
-    if not credentials or credentials.invalid:
-        flow = client.flow_from_clientsecrets(CLIENT_SECRET_FILE, SCOPES)
-        flow.user_agent = APPLICATION_NAME
-        if flags:
-            credentials = tools.run_flow(flow, store, flags)
-        else: # Needed only for compatibility with Python 2.6
-            credentials = tools.run(flow, store)
-        print('Storing credentials to ' + credential_path)
-    return credentials
-
-def get_users():
-    """Shows basic usage of the Google Admin SDK Directory API.
-
-    Creates a Google Admin SDK API service object and outputs a list of first
-    10 users in the domain.
+    Task to copy GApps users to LDAP directory
     """
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('admin', 'directory_v1', http=http)
+    user = User.objects.get(email=user_email)
+    social = user.social_auth.get(provider='google-oauth2')
+    print ("Get social")
+    print (social)
+    domain = user_email.split('@')[1]
+    print(domain)
+    response = requests.get(
+            'https://www.googleapis.com/admin/directory/v1/users?domain={}'.format(domain),
+                params={'access_token': social.extra_data['access_token']}
+        )
+    print (response.json())
+    gappsUsers = response.json().get('users')
+    # update records
+    confirmedLdapUsers = []
+    for gUser in gappsUsers:
+        print (gUser.get('primaryEmail'))
+        try:
+            usr = LdapUser.objects.get(email=gUser.get('primaryEmail'))
+            #check if user needs to be deleted
+            if gUser['suspended']:
+                usr.delete()
+                continue
+        except LdapUser.DoesNotExist:
+            if gUser['suspended']:
+                continue
+            usr = LdapUser(email=gUser.get('primaryEmail'), password = ''.join(secrets.choice(ALPHABET) for i in range(10)))
+        
+        usr.group = 1
+        usr.uid = gUser['id'] 
+        usr.first_name = gUser['name']['givenName']
+        usr.last_name = gUser['name']['familyName']
+        usr.full_name = gUser['name']['fullName']
+        usr.username = gUser.get('primaryEmail')
+        usr.home_directory = "/"
+        usr.save()
 
-    print('Getting the first 10 users in the domain')
-    results = service.users().list(customer='my_customer', maxResults=10,
-        orderBy='email').execute()
-    users = results.get('users', [])
+        confirmedLdapUsers.append(usr.email)
 
-    if not users:
-        print('No users in the domain.')
-    else:
-        print('Users:')
-        for user in users:
-            print('{0} ({1})'.format(user['primaryEmail'],
-                user['name']['fullName']))
+    #delete users from ldap that are not gApps users
+    LdapUser.objects.all().exclude(email__in=confirmedLdapUsers).delete()
+
+    return domain

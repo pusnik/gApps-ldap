@@ -10,7 +10,7 @@ from IDaaS.models import LdapGroup, LdapUser
 
 
 class LdapUserAdmin(admin.ModelAdmin):
-    exclude = ['dn', 'password', 'photo']
+    exclude = ['dn', 'photo']
     list_display = ['username', 'first_name', 'last_name', 'email', 'uid']
     search_fields = ['first_name', 'last_name', 'full_name', 'username']
 
