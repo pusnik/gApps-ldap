@@ -15,11 +15,10 @@ def get_avatar(request, backend, strategy, details, response,
     if url:
         request.session['avatar_url'] = url.split('?')[0]+'?sz=200'
     if domain and user_id:
-        #check if user is admin
-        social = user.social_auth.get(provider='google-oauth2')       
+        #check if user is admin   
         response = requests.get(
             ' https://www.googleapis.com/admin/directory/v1/users/{}'.format(user_id),
-                params={'access_token': social.extra_data['access_token']}
+                params={'access_token': response['access_token']}
         )
         print ("User data")
         print (response.json())
